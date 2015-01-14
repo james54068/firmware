@@ -19,21 +19,15 @@
 #include "semphr.h"
 #include "global.h"
 
+#include "sdcard.h"
+
 void flight_control_task(void);
 UBXvelned_t get_UBXvelned_data(void);
 UBXsol_t get_UBXsol_data(void);
 UBXposLLH_t get_UBXposLLH_data(void);
 vertical_data_t get_vertical_data(void);
 xSemaphoreHandle flight_control_sem;
-xSemaphoreHandle SD_data_trigger;
-extern imu_data_t imu_raw_data;
-extern radio_controller_t my_rc;
-extern imu_data_t imu_filtered_data;
-extern imu_calibrated_offset_t imu_offset;
-extern attitude_t attitude;
-extern vector3d_f_t predicted_g_data;
-extern euler_trigonometry_t negative_euler;
-extern vertical_data_t vertical_raw_data;
-extern imu_unscaled_data_t imu_unscaled_data;
+
+
 
 #endif

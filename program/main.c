@@ -69,7 +69,7 @@ int main(void)
 	serial_rx_queue = xQueueCreate(5, sizeof(serial_msg));
 	gps_serial_queue = xQueueCreate(5, sizeof(serial_msg));
 	vSemaphoreCreateBinary(flight_control_sem);
-	vSemaphoreCreateBinary(SD_data_trigger);
+	// vSemaphoreCreateBinary(SD_data_trigger);
 	vSemaphoreCreateBinary(SD_sem);
 	/* Global data initialazition */
 	init_global_data();
@@ -135,14 +135,14 @@ int main(void)
 		NULL
 	);
 
-	xTaskCreate(
-		(pdTASK_CODE)SD_data_Task,
-		(signed portCHAR*)"SD_data_Task",
-		4096,
-		NULL,
-		tskIDLE_PRIORITY + 6,
-		NULL
-	);
+	// xTaskCreate(
+	// 	(pdTASK_CODE)SD_data_Task,
+	// 	(signed portCHAR*)"SD_data_Task",
+	// 	4096,
+	// 	NULL,
+	// 	tskIDLE_PRIORITY + 6,
+	// 	NULL
+	// );
 
 	xTaskCreate(
 		(pdTASK_CODE)flight_control_task,

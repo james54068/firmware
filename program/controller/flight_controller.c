@@ -13,31 +13,34 @@ int16_t __nav_roll,__nav_pitch;
 int32_t __altitude_Zd;
 uint32_t __pAcc,__numSV;
 
-imu_data_t imu_raw_data;
-radio_controller_t my_rc;
-imu_data_t imu_filtered_data;
-imu_calibrated_offset_t imu_offset;
-attitude_t attitude;
-vector3d_f_t predicted_g_data;
-euler_trigonometry_t negative_euler;
-vertical_data_t vertical_raw_data;
-imu_unscaled_data_t imu_unscaled_data;
+// imu_data_t imu_raw_data;
+// radio_controller_t my_rc;
+// imu_data_t imu_filtered_data;
+// imu_calibrated_offset_t imu_offset;
+// attitude_t attitude;
+// vector3d_f_t predicted_g_data;
+// euler_trigonometry_t negative_euler;
+// vertical_data_t vertical_raw_data;
+// imu_unscaled_data_t imu_unscaled_data;
 
 void flight_control_task(void)
 {
+	uint8_t i;
+	uint8_t time_stamp;
+	uint8_t words[40];
 	uint8_t buffer[100];
 	/* State estimator initialization */
-	// imu_unscaled_data_t imu_unscaled_data;
-	// imu_data_t imu_raw_data;
-	// imu_data_t imu_filtered_data;
-	// imu_calibrated_offset_t imu_offset;
-	// attitude_t attitude;
-	// vector3d_f_t predicted_g_data;
-	// euler_trigonometry_t negative_euler;
-	// vertical_data_t vertical_raw_data;
+	imu_unscaled_data_t imu_unscaled_data;
+	imu_data_t imu_raw_data;
+	imu_data_t imu_filtered_data;
+	imu_calibrated_offset_t imu_offset;
+	attitude_t attitude;
+	vector3d_f_t predicted_g_data;
+	euler_trigonometry_t negative_euler;
+	vertical_data_t vertical_raw_data;
 
 	/* Radio controller initialization */
-	// radio_controller_t my_rc;
+	radio_controller_t my_rc;
 
 	/* PID controller initialization */
 	attitude_stablizer_pid_t pid_roll_info;
@@ -66,7 +69,7 @@ void flight_control_task(void)
 #if IS_USE_GPS
 	lea6h_set_USART_IT();
 #endif 
-
+	buffer_flag = buffer_2;
 	while (1) {
 
 		if ( xSemaphoreTake(flight_control_sem, 9) == pdTRUE) {
@@ -158,6 +161,43 @@ void flight_control_task(void)
 			set_global_data_value(GPS_LON, INT32, DATA_CAST(GPS_position_LLH.lon));
 			update_system_time();
 
+			if(time_flag==4)
+			{
+				time_flag=0;
+				time_stamp++;
+				if (time_stamp>=10) time_stamp=0;
+				if (buffer_flag == buffer_2){
+					memset(words,0x00,sizeof(words));
+					sprintf(words,"%ld,%ld,%ld,%d\r\n",imu_unscaled_data.acc[0],imu_unscaled_data.acc[1],imu_unscaled_data.acc[2],(signed int)time_stamp);
+					for(i=0;i<(strlen((char*)words));i++){
+						buffer1[buffer1_counter+i]=words[i];
+					}
+					buffer1_counter += (strlen((char*)words));
+				}else if(buffer_flag == buffer_1){
+					memset(words,0x00,sizeof(words));
+					sprintf(words,"%ld,%ld,%ld,%d\r\n",imu_unscaled_data.acc[0],imu_unscaled_data.acc[1],imu_unscaled_data.acc[2],(signed int)time_stamp);
+					for(i=0;i<(strlen((char*)words));i++){
+						buffer2[buffer2_counter+i]=words[i];
+					}
+					buffer2_counter += (strlen((char*)words));
+				}	
+
+				if(buffer1_counter>=19968){	
+					buffer_flag = buffer_1;
+					if(buffer_sync_flag==0){
+						xSemaphoreGive(SD_sem);
+						LED_TOGGLE(LED1);
+					}		
+				}else if(buffer2_counter>=19968){
+					buffer_flag = buffer_2;
+					if(buffer_sync_flag==0){
+						xSemaphoreGive(SD_sem);
+						LED_TOGGLE(LED1);
+					}
+				}
+
+			}
+		
 			LED_ON(LED4);
 			LED_ON(TOGGLE_DEBUG);
 			// xSemaphoreGive(SD_data_trigger);

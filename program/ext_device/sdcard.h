@@ -42,9 +42,12 @@ extern FRESULT   res;
 extern UINT      bw;
 
 extern uint8_t file_name[20];
-extern uint8_t time_flag;
-extern uint8_t time_stamp;
-extern uint8_t block_flag;
+extern uint8_t buffer1[20480];
+extern uint8_t buffer2[20480]; 
+extern uint8_t buffer_flag;
+extern uint8_t buffer_sync_flag;
+extern uint32_t buffer1_counter,buffer2_counter;
+
 
 
 #endif

@@ -4,6 +4,7 @@
 #include "FreeRTOS.h"
 #include "semphr.h"
 #include "flight_controller.h"
+uint8_t time_flag;
 void TIM1_BRK_TIM9_IRQHandler()
 {
         if (TIM_GetITStatus(TIM9, TIM_IT_Update) != RESET){
@@ -16,22 +17,14 @@ void TIM1_BRK_TIM9_IRQHandler()
 void TIM8_BRK_TIM12_IRQHandler()
 {
 	long lHigherPriorityTaskWoken = pdFALSE;
-	long lHigherPriorityTaskWoken2 = pdFALSE;
         if ( TIM_GetITStatus(TIM12, TIM_IT_Update) != RESET ) {
         	time_flag++;
-        	if(time_flag==4){
-        		time_flag=0;
-        		if(block_flag==0)time_stamp++;
-        		xSemaphoreGiveFromISR(SD_data_trigger, &lHigherPriorityTaskWoken2);
-        	}
-        	if (time_stamp>=10) time_stamp=0;
         	xSemaphoreGiveFromISR(flight_control_sem, &lHigherPriorityTaskWoken);
-        	
-		TIM_ClearITPendingBit(TIM12, TIM_IT_Update);
+        	TIM_ClearITPendingBit(TIM12, TIM_IT_Update);
 
         }
         portYIELD_FROM_ISR(  lHigherPriorityTaskWoken );
-        portYIELD_FROM_ISR(  lHigherPriorityTaskWoken2 );
+      
 }
 void TIM1_UP_TIM10_IRQHandler()
 {
