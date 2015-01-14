@@ -21,15 +21,17 @@ uint8_t words[40];
 uint8_t counter_add;
 uint8_t time_stamp=0;
 uint8_t time_flag=0;
+uint8_t block_flag=0;
 
 void SD_data_Task(void *pvParameters)
 {
 	buffer_flag = buffer_2;
 	while(1)
 	{
-		if( xSemaphoreTake(SD_data_trigger, 9) == pdTRUE && time_flag==4){
-			time_flag=0;
+		if( xSemaphoreTake(SD_data_trigger, 9) == pdTRUE){
+			block_flag=0;
 			GPIO_ToggleBits(GPIOC,GPIO_Pin_8);
+			time_stamp++;
 			uint8_t i;	
 			if (buffer_flag == buffer_2){
 				memset(words,0x00,sizeof(words));
@@ -54,13 +56,21 @@ void SD_data_Task(void *pvParameters)
 				if(buffer_sync_flag==0){
 					xSemaphoreGive(SD_sem);
 					LED_TOGGLE(LED1);
-				}else vTaskDelay(40);		
+				}else{
+					block_flag=1;
+					LED_TOGGLE(LED2);
+					vTaskDelay(40);
+				} 		
 			}else if(buffer2_counter>=19968){
 				buffer_flag = buffer_2;
 				if(buffer_sync_flag==0){
 					xSemaphoreGive(SD_sem);
 					LED_TOGGLE(LED1);
-				}else vTaskDelay(40);
+				}else{
+					block_flag=1;
+					LED_TOGGLE(LED2);
+					vTaskDelay(40);
+				} 
 			}
 		} 
 	}    		

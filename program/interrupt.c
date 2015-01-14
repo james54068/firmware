@@ -19,10 +19,14 @@ void TIM8_BRK_TIM12_IRQHandler()
 	long lHigherPriorityTaskWoken2 = pdFALSE;
         if ( TIM_GetITStatus(TIM12, TIM_IT_Update) != RESET ) {
         	time_flag++;
-        	if(time_flag==4) time_stamp++;
+        	if(time_flag==4){
+        		time_flag=0;
+        		if(block_flag==0)time_stamp++;
+        		xSemaphoreGiveFromISR(SD_data_trigger, &lHigherPriorityTaskWoken2);
+        	}
         	if (time_stamp>=10) time_stamp=0;
         	xSemaphoreGiveFromISR(flight_control_sem, &lHigherPriorityTaskWoken);
-        	xSemaphoreGiveFromISR(SD_data_trigger, &lHigherPriorityTaskWoken2);
+        	
 		TIM_ClearITPendingBit(TIM12, TIM_IT_Update);
 
         }

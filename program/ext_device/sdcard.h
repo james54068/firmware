@@ -44,6 +44,7 @@ extern UINT      bw;
 extern uint8_t file_name[20];
 extern uint8_t time_flag;
 extern uint8_t time_stamp;
+extern uint8_t block_flag;
 
 
 #endif
